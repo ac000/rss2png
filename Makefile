@@ -1,0 +1,9 @@
+CC 	= gcc
+CFLAGS	= -Wall -Wextra -std=c99 -O2 -g -Wp,-D_FORTIFY_SOURCE=2 -D_FILE_OFFSET_BITS=64 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -fPIC $(shell pkg-config --cflags cairo)
+LDFLAGS = -Wl,-z,relro -Wl,-z,now -pie $(shell pkg-config --libs cairo) -lcurl
+
+rss2png: rss2png.c
+	 $(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+clean:
+	rm -f rss2png
