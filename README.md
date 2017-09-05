@@ -9,7 +9,7 @@ be used in HTML email signatures etc.
 
 Install some required packages
 
-    $ sudo yum|dnf install libcurl-devel cairo-devel dejavu-sans-fonts
+    $ sudo dnf install libcurl-devel cairo-devel gumbo-parser-devel dejavu-sans-fonts
 
 Clone the repository and build it
 
@@ -33,8 +33,7 @@ The image will placed under
 
 ## License
 
-rss2png is licensed under the GNU General Public License version 2. See
-*COPYING*.
+rss2png is licensed under the MIT licence. See *MIT-LICENSE.txt*.
 
 
 ## Contributing

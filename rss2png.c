@@ -4,21 +4,16 @@
  * Copyright (c) 2017		Securolytics, Inc.
  *				Andrew Clayton <andrew.clayton@securolytics.io>
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
+ * Licensed under the MIT license. See MIT-LICENSE.txt
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <getopt.h>
 
+#include <gumbo.h>
 #include <curl/curl.h>
 #include <cairo.h>
 
@@ -39,7 +34,9 @@ struct curl_buf {
 
 static struct curl_buf buf;
 static char title[64];
+static char sbuf[256];
 static char summary[64];
+static bool htt_done;
 static const char *env_debug;
 
 static void create_image(const char *img_path)
@@ -48,9 +45,6 @@ static void create_image(const char *img_path)
 		cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 450, 68);
 	cairo_t *cr = cairo_create(surface);
 
-	if (env_debug)
-		printf("Generating image...\n");
-
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
 
 	cairo_select_font_face(cr, "sans", CAIRO_FONT_SLANT_NORMAL,
@@ -58,6 +52,13 @@ static void create_image(const char *img_path)
 	cairo_set_font_size(cr, 14.0);
 	cairo_move_to(cr, 5.0, 20.0);
 	cairo_show_text(cr, title);
+
+	if (strlen(summary) == 51) {
+		summary[50] = '\0';
+		strcat(summary, " ...");
+	}
+	if (env_debug)
+		printf("  summary : %s\n", summary);
 
 	cairo_select_font_face(cr, "sans", CAIRO_FONT_SLANT_NORMAL,
 			CAIRO_FONT_WEIGHT_NORMAL);
@@ -69,15 +70,48 @@ static void create_image(const char *img_path)
 	cairo_move_to(cr, 5.0, 62.0);
 	cairo_show_text(cr, BLOG_URL);
 
+	if (env_debug)
+		printf("Generating image...\n");
+
 	cairo_destroy(cr);
 	cairo_surface_write_to_png(surface, img_path);
 	cairo_surface_destroy(surface);
 }
 
+static const char *html_to_text(GumboNode *node)
+{
+	const GumboVector *children;
+	unsigned int i;
+
+	if (htt_done)
+		return "";
+
+	if (node->type == GUMBO_NODE_TEXT) {
+		return node->v.text.text;
+	} else if (node->type == GUMBO_NODE_ELEMENT &&
+		   node->v.element.tag != GUMBO_TAG_SCRIPT &&
+		   node->v.element.tag != GUMBO_TAG_STYLE) {
+		children = &node->v.element.children;
+		for (i = 0; i < children->length; i++) {
+			const char *text = html_to_text(children->data[i]);
+
+			if (strlen(summary) + strlen(text) >= 51) {
+				snprintf(summary + strlen(summary),
+					 51 - strlen(summary) + 1, "%s", text);
+				htt_done = true;
+			} else if (strlen(text) > 0) {
+				strcat(summary, text);
+			}
+		}
+	}
+
+	return "";
+}
+
 static void find_item(void)
 {
 	char *ptr;
-	int i = 0;
+	unsigned int i = 0;
 
 	ptr = strstr(buf.buf, "<item>");
 	if (!ptr)
@@ -98,24 +132,12 @@ static void find_item(void)
 	ptr = strstr(ptr, "<description>");
 	if (!ptr)
 		err_exit("Couldn't find <description> tag\n");
-	ptr = strstr(ptr, "<p>");
-	if (!ptr)
-		err_exit("Couldn't find <p> tag\n");
-	ptr += 3;
-
-	i = 0;
-	while (*ptr != '<' && i < 50) {
-		summary[i++] = *ptr;
-		ptr++;
-	}
-	summary[i] = '\0';
-	if (i == 50)
-		strcat(summary, " ...");
+	snprintf(sbuf, sizeof(sbuf), "%s", ptr);
 
 	if (env_debug) {
 		printf("Extracted title and summary :-\n");
 		printf("  title   : %s\n", title);
-		printf("  summary : %s\n", summary);
+		printf("  summary : %s\n", sbuf);
 	}
 }
 
@@ -163,6 +185,7 @@ static void get_feed(void)
 int main(int argc, char *argv[])
 {
 	int optind;
+	GumboOutput *gparser;
 	const char *img_path = NULL;
 
 	while ((optind = getopt(argc, argv, "ho:")) != -1) {
@@ -188,8 +211,13 @@ int main(int argc, char *argv[])
 
 	get_feed();
 	find_item();
+
+	gparser = gumbo_parse(sbuf);
+	html_to_text(gparser->root);
+
 	create_image(img_path);
 
+	gumbo_destroy_output(&kGumboDefaultOptions, gparser);
 	free(buf.buf);
 
 	exit(EXIT_SUCCESS);
