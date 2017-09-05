@@ -48,7 +48,7 @@ static void create_image(void)
 	cairo_t *cr = cairo_create(surface);
 
 	if (env_debug)
-		printf("Gnerating image...\n");
+		printf("Generating image...\n");
 
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
 
