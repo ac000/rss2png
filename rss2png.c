@@ -163,6 +163,9 @@ int main(void)
 {
 	env_debug = getenv("RSS2PNG_DEBUG");
 
+	if (env_debug)
+		printf("rss2png %s\n", RSS2PNG_VERSION);
+
 	get_feed();
 	find_item();
 	create_image();
