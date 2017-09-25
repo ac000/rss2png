@@ -17,13 +17,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
 #include <curl/curl.h>
 #include <cairo.h>
 
 #define FEED_URL		"https://blog.securolytics.io/feed/"
 #define BLOG_URL		"https://blog.securolytics.io/"
-#define IMG_NAME		"/var/tmp/rss.png"
+#define DEF_IMG_PATH		"/var/tmp/rss.png"
 
 #define err_exit(...)  \
 	do { \
@@ -41,7 +42,7 @@ static char title[64];
 static char summary[64];
 static const char *env_debug;
 
-static void create_image(void)
+static void create_image(const char *img_path)
 {
 	cairo_surface_t *surface =
 		cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 450, 68);
@@ -69,7 +70,7 @@ static void create_image(void)
 	cairo_show_text(cr, BLOG_URL);
 
 	cairo_destroy(cr);
-	cairo_surface_write_to_png(surface, IMG_NAME);
+	cairo_surface_write_to_png(surface, img_path);
 	cairo_surface_destroy(surface);
 }
 
@@ -159,16 +160,35 @@ static void get_feed(void)
 	curl_global_cleanup();
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-	env_debug = getenv("RSS2PNG_DEBUG");
+	int optind;
+	const char *img_path = NULL;
 
+	while ((optind = getopt(argc, argv, "ho:")) != -1) {
+		switch (optind) {
+		case 'h':
+			printf("Usage: rss2png [-o output]\n");
+			exit(EXIT_SUCCESS);
+		case 'o':
+			img_path = optarg;
+			break;
+		default:
+			printf("Usage: rss2png [-o output]\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	env_debug = getenv("RSS2PNG_DEBUG");
 	if (env_debug)
 		printf("rss2png %s\n", RSS2PNG_VERSION);
 
+	if (!img_path)
+		img_path = DEF_IMG_PATH;
+
 	get_feed();
 	find_item();
-	create_image();
+	create_image(img_path);
 
 	free(buf.buf);
 
