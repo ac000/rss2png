@@ -39,7 +39,7 @@ struct curl_buf {
 static struct curl_buf buf;
 static char title[64];
 static char summary[64];
-static char *env_debug;
+static const char *env_debug;
 
 static void create_image(void)
 {
