@@ -4,6 +4,8 @@
  * Copyright (c) 2017		Securolytics, Inc.
  *				Andrew Clayton <andrew.clayton@securolytics.io>
  *
+ * 		 2019		Andrew Clayton <andrew@digital-domain.net>
+ *
  * Licensed under the MIT license. See MIT-LICENSE.txt
  */
 
@@ -38,6 +40,12 @@ static char sbuf[256];
 static char summary[64];
 static bool htt_done;
 static const char *env_debug;
+
+static void exit_usage(int status)
+{
+	printf("Usage: rss2png [-o output]\n");
+	exit(status);
+}
 
 static void create_image(const char *img_path)
 {
@@ -191,14 +199,13 @@ int main(int argc, char *argv[])
 	while ((optind = getopt(argc, argv, "ho:")) != -1) {
 		switch (optind) {
 		case 'h':
-			printf("Usage: rss2png [-o output]\n");
-			exit(EXIT_SUCCESS);
+			exit_usage(EXIT_SUCCESS);
+			break;
 		case 'o':
 			img_path = optarg;
 			break;
 		default:
-			printf("Usage: rss2png [-o output]\n");
-			exit(EXIT_FAILURE);
+			exit_usage(EXIT_FAILURE);
 		}
 	}
 
