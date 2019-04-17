@@ -19,8 +19,6 @@
 #include <curl/curl.h>
 #include <cairo.h>
 
-#define FEED_URL		"https://blog.securolytics.io/feed/"
-#define BLOG_URL		"https://blog.securolytics.io/"
 #define DEF_IMG_PATH		"/var/tmp/rss.png"
 
 #define err_exit(...)  \
@@ -41,9 +39,12 @@ static char summary[64];
 static bool htt_done;
 static const char *env_debug;
 
+static const char *FEED_URL;
+static const char *BLOG_URL;
+
 static void exit_usage(int status)
 {
-	printf("Usage: rss2png [-o output]\n");
+	printf("Usage: rss2png -f feed_url [-u blog url] [-o output]\n");
 	exit(status);
 }
 
@@ -196,18 +197,26 @@ int main(int argc, char *argv[])
 	GumboOutput *gparser;
 	const char *img_path = NULL;
 
-	while ((optind = getopt(argc, argv, "ho:")) != -1) {
+	while ((optind = getopt(argc, argv, "hf:o:u:")) != -1) {
 		switch (optind) {
+		case 'f':
+			FEED_URL = optarg;
+			break;
 		case 'h':
 			exit_usage(EXIT_SUCCESS);
 			break;
 		case 'o':
 			img_path = optarg;
 			break;
+		case 'u':
+			BLOG_URL = optarg;
+			break;
 		default:
 			exit_usage(EXIT_FAILURE);
 		}
 	}
+	if (!FEED_URL)
+		exit_usage(EXIT_FAILURE);
 
 	env_debug = getenv("RSS2PNG_DEBUG");
 	if (env_debug)
@@ -215,6 +224,8 @@ int main(int argc, char *argv[])
 
 	if (!img_path)
 		img_path = DEF_IMG_PATH;
+	if (!BLOG_URL)
+		BLOG_URL = "";
 
 	get_feed();
 	find_item();

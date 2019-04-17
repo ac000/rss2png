@@ -20,13 +20,13 @@ Clone the repository and build it
 
 ## Running
 
-    $ rss2png
+    $ rss2png -f https://example.com/feed/ [-u https://example.com/]
 
 or to get some debug output
 
     $ RSS2PNG_DEBUG=1 rss2png
 
-The image will placed under
+The image will be placed under (can be overridden with the -o option)
 
     /var/tmp/rss.png
 
