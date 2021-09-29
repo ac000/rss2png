@@ -40,7 +40,7 @@ rss2png is licensed under the MIT licence. See *MIT-LICENSE.txt*.
 
 Patches and/or pull requests should be emailed to the project maintainer
 
-    Andrew Clayton <andrew.clayton@securolytics.io>
+    Andrew Clayton <andrew@digital-domain.net>
 
 preferably using *git-send-email(1)* and *git-request-pull(1)*
 
