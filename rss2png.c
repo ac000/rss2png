@@ -57,7 +57,7 @@ static void create_image(const char *img_path)
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
 
 	cairo_select_font_face(cr, "sans", CAIRO_FONT_SLANT_NORMAL,
-			CAIRO_FONT_WEIGHT_BOLD);
+			       CAIRO_FONT_WEIGHT_BOLD);
 	cairo_set_font_size(cr, 14.0);
 	cairo_move_to(cr, 5.0, 20.0);
 	cairo_show_text(cr, title);
@@ -90,18 +90,19 @@ static void create_image(const char *img_path)
 static const char *html_to_text(GumboNode *node)
 {
 	const GumboVector *children;
-	unsigned int i;
 
 	if (htt_done)
 		return "";
 
-	if (node->type == GUMBO_NODE_TEXT) {
+	if (node->type == GUMBO_NODE_TEXT)
 		return node->v.text.text;
-	} else if (node->type == GUMBO_NODE_ELEMENT &&
-		   node->v.element.tag != GUMBO_TAG_SCRIPT &&
-		   node->v.element.tag != GUMBO_TAG_STYLE) {
+
+	if (node->type == GUMBO_NODE_ELEMENT &&
+	    node->v.element.tag != GUMBO_TAG_SCRIPT &&
+	    node->v.element.tag != GUMBO_TAG_STYLE) {
 		children = &node->v.element.children;
-		for (i = 0; i < children->length; i++) {
+
+		for (unsigned int i = 0; i < children->length; i++) {
 			const char *text = html_to_text(children->data[i]);
 
 			if (strlen(summary) + strlen(text) >= 51) {
@@ -185,7 +186,7 @@ static void get_feed(void)
 
 	if (res != CURLE_OK)
 		err_exit("curl_easy_perform() failed: %s\n",
-				curl_easy_strerror(res));
+			 curl_easy_strerror(res));
 
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
