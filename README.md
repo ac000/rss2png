@@ -13,14 +13,16 @@ Install some required packages
 
 Clone the repository and build it
 
-    $ git clone https://github.com/ac000/rss2png
+    $ git clone https://github.com/ac000/rss2png.git
     $ cd rss2png
     $ make
 
 
 ## Running
 
-    $ rss2png -f https://example.com/feed/ [-u https://example.com/]
+In its simplest form
+
+    $ rss2png -f https://example.com/feed/
 
 or to get some debug output
 
@@ -30,6 +32,8 @@ The image will be placed under (can be overridden with the -o option)
 
     /var/tmp/rss.png
 
+You can use the *-u* option to specify the URL of the feed that will be
+displayed on the image.
 
 ## License
 
@@ -40,7 +44,7 @@ rss2png is licensed under the MIT licence. See *MIT-LICENSE.txt*.
 
 Patches and/or pull requests should be emailed to the project maintainer
 
-    Andrew Clayton <andrew@digital-domain.net>
+    Andrew Clayton <ac@sigsegv.uk>
 
 preferably using *git-send-email(1)* and *git-request-pull(1)*
 
